@@ -1,29 +1,37 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = BASE_DIR / "db" / "sql_app.db"
-DB_PATH.parent.mkdir(exist_ok=True)
+DB_USER = os.getenv("POSTGRES_USER", "postgres")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
+DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
+DB_NAME = os.getenv("POSTGRES_DB", "fastapi_db")
 
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
+DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
+engine = create_async_engine(
+    DATABASE_URL,
+    pool_size=20,
+    max_overflow=10,
     echo=True
 )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+AsyncSessionLocal = sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False
+)
 
 Base = declarative_base()
 
-def get_db():
-    """Генератор сессий для Dependency Injection"""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()

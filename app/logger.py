@@ -7,7 +7,7 @@ def setup_logger():
     logger.add(
         "logs/api.log",
         level="INFO",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {extra[source]} {message}"
     )
     
     logger.add(
