@@ -1,9 +1,7 @@
 **FastAPI CRUD API для заметок**  
 
-**🚀 Запуск:**  
-- Локально: `python3 -m uvicorn app.main:app --reload`  
-- В Docker: `docker-compose up --build`
-
+**🚀 Запуск в Docker:**  
+`docker-compose up --build`
 
 **📌 Эндпоинты:**  
 - `POST /notes`: Создание (структура заметки - `{"name": "...", "description": "..."}`)  
@@ -14,4 +12,4 @@
 - `GET /health`: Проверка работоспособности сервиса
 - `GET /docs`: Swagger документация
 
-**🛠 Технологии:** FastAPI + SQLAlchemy + SQLite
+**🛠 Технологии:** FastAPI + SQLAlchemy + PostgreSQL
